@@ -1,109 +1,80 @@
-# ĐẶC TẢ NGHIỆP VỤ CHI TIẾT CỦA 4 VAI TRÒ (ROLES)
-**Đề tài:** Hệ thống quản lý học tập trực tuyến (LMS) tích hợp Trợ lý AI, hỗ trợ SCORM và OpenBadges.
+# ĐẶC TẢ NGHIỆP VỤ CHI TIẾT CỦA 3 VAI TRÒ (ROLES) BÁM SÁT ĐỀ CƯƠNG TTTN
+**Đề tài:** Hệ thống quản lý học tập trực tuyến (LMS) tích hợp Trợ lý AI hỗ trợ học tập.
+
+Để bám sát 100% đề cương yêu cầu trong file [docs.md](file:///e:/TTTN/docs.md), hệ thống sẽ tối giản hóa nghiệp vụ, tập trung vào mô hình trường học/học viện chuẩn với **3 vai trò (Roles) cốt lõi**: **Super Admin**, **Giảng viên (Teacher)**, và **Học viên (Student)**. 
+
+Mô hình này loại bỏ phân hệ đối tác bên thứ ba phức tạp, giúp bạn tập trung 100% thời gian vào phần code LMS cốt lõi và Trợ lý AI RAG + Guardrails.
 
 ---
 
 ## 1. SƠ ĐỒ PHỐI HỢP NGHIỆP VỤ (WORKFLOW)
 
-Quy trình phối hợp giữa 4 vai trò khi triển khai một khóa học chuẩn SCORM từ bên thứ ba:
+Quy trình phối hợp giữa 3 vai trò trong một chu kỳ học tập tích hợp AI:
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor CP as Content Provider (Bên thứ 3)
-    actor Admin as Super Admin (Trường học)
-    actor Teacher as Giảng viên (Trường học)
-    actor Student as Sinh viên
+    actor Admin as Super Admin (Quản trị)
+    actor Teacher as Giảng viên (Đứng lớp)
+    actor Student as Học viên (Sinh viên)
 
-    CP->>CP: Đóng gói bài giảng chuẩn SCORM (.zip)
-    CP->>Admin: Upload gói SCORM & Đăng ký xuất bản khóa học
-    Admin->>Admin: Kiểm duyệt nội dung & Phê duyệt khóa học công khai
-    Teacher->>Admin: Chọn khóa học từ thư viện để tạo lớp học cho sinh viên
-    Teacher->>Student: Gán sinh viên vào lớp & Cấu hình tiêu chí nhận OpenBadges
-    Teacher->>Teacher: Đặt lịch buổi học trực tuyến (Zoom/Meet) để giải đáp
-    Student->>Student: Học slide tương tác SCORM & Chat hỏi đáp với Trợ lý AI
-    Student->>Student: Hoàn thành bài thi trắc nghiệm (đạt điểm Pass)
-    Student->>Teacher: Tham gia buổi học Zoom giải đáp nếu có thắc mắc
-    Student->>Student: Hệ thống tự động cấp ảnh chứng chỉ chuẩn OpenBadges
-    Student->>Student: Chia sẻ huy hiệu lên LinkedIn cá nhân
+    Admin->>Admin: Quản lý tài khoản, cấu hình hệ thống & API AI mặc định
+    Teacher->>Teacher: Tạo khóa học, danh mục khóa học
+    Teacher->>Teacher: Tải lên tài liệu học tập (PDF, Video, Gói SCORM)
+    Note over Teacher: Hệ thống tự động đẩy tài liệu vào Vector DB để làm cơ sở tri thức cho AI
+    Teacher->>Student: Gán học viên vào khóa học & Thiết lập tiêu chí cấp OpenBadges
+    Student->>Student: Vào học (Xem tài liệu, chạy bài giảng tương tác SCORM)
+    Student->>Student: Chat với Trợ lý AI (Hỏi đáp kiến thức trực tiếp theo tài liệu khóa học)
+    Note over Student: Hệ thống áp dụng Guardrails để kiểm soát câu hỏi/câu trả lời của AI
+    Student->>Student: Làm bài thi trắc nghiệm & Xem lịch sử/tiến độ học tập
+    Teacher->>Teacher: Theo dõi tiến độ & Giám sát kết quả học tập của học viên
+    Student->>Student: Đạt điều kiện -> Nhận huy hiệu số OpenBadges & chia sẻ lên LinkedIn
 ```
 
 ---
 
-## 2. ĐẶC TẢ CHI TIẾT NGHIỆP VỤ TỪNG VAI TRÒ
+## 2. PHÂN BỔ NGHIỆP VỤ CHI TIẾT BÁM SÁT ĐỀ CƯƠNG
+
+Dưới đây là cách ánh xạ các yêu cầu thực hành trong đề cương vào chức năng nghiệp vụ của 3 vai trò:
 
 ### 2.1. VAI TRÒ: SUPER ADMIN (QUẢN TRỊ HỆ THỐNG)
-Super Admin là người sở hữu và vận hành hệ thống LMS. Nhiệm vụ chính là đảm bảo hệ thống chạy ổn định, an toàn thông tin và kiểm soát tài nguyên.
+*Bám sát yêu cầu: "Quản lý tài khoản người dùng" & "Xây dựng chức năng quản trị hệ thống".*
 
-#### Các nghiệp vụ chính:
-1.  **Quản lý Tài khoản & Phân quyền:**
-    *   Tạo, khóa hoặc xóa tài khoản của người dùng (Sinh viên, Giảng viên).
-    *   Phê duyệt hồ sơ đăng ký của các Đối tác bên thứ ba (Content Provider) sau khi ký hợp đồng liên kết.
-2.  **Kiểm duyệt Học liệu & Khóa học (Content Moderation):**
-    *   Nhận yêu cầu xuất bản khóa học từ các đối tác bên thứ ba.
-    *   Kiểm tra tính hợp lệ của gói SCORM tải lên (quét virus, kiểm tra cấu trúc file `imsmanifest.xml`).
-    *   Phê duyệt hoặc từ chối xuất bản khóa học lên thư viện dùng chung của nhà trường.
-3.  **Cấu hình Hệ thống & Dịch vụ AI:**
-    *   Quản lý API Keys của mô hình ngôn ngữ lớn (LLM - ví dụ Gemini API) và cơ sở dữ liệu Vector Database.
-    *   Cấu hình các bộ lọc an toàn hệ thống (Safety Settings mặc định cho AI).
-4.  **Báo cáo & Giám sát Hệ thống:**
-    *   Theo dõi tổng số lượng sinh viên đang trực tuyến, số lượng tài nguyên lưu trữ đã sử dụng.
-    *   Báo cáo doanh thu khóa học (nếu có chia sẻ doanh thu với bên thứ ba).
+*   **Quản lý người dùng:** Tạo mới, phê duyệt, khóa hoặc xóa tài khoản của Giảng viên và Học viên trên hệ thống.
+*   **Giám sát hệ thống:** Xem thống kê tổng quan (số lượng khóa học, số lượng học viên đang hoạt động, lượng tài nguyên lưu trữ đã sử dụng).
+*   **Cấu hình kỹ thuật:** Quản lý cấu hình API kết nối với LLM (Gemini API) và kiểm soát tài nguyên máy chủ.
 
 ---
 
-### 2.2. VAI TRÒ: CONTENT PROVIDER (BÊN THỨ BA / NHÀ CUNG CẤP KHÓA HỌC)
-Content Provider là các đơn vị liên kết bên ngoài trường học, chịu trách nhiệm cung cấp nội dung đào tạo chất lượng cao đạt chuẩn quốc tế.
+### 2.2. VAI TRÒ: GIẢNG VIÊN (TEACHER)
+*Bám sát yêu cầu: "Quản lý khóa học/danh mục", "Quản lý bài học/tài liệu", "Theo dõi tiến độ học viên", "Quản lý kết quả/lịch sử học tập", và "Xây dựng cơ sở tri thức từ nội dung khóa học".*
 
-#### Các nghiệp vụ chính:
-1.  **Quản lý Tài nguyên SCORM:**
-    *   Tạo mới, chỉnh sửa hoặc xóa các gói bài giảng chuẩn **SCORM** (.zip).
-    *   Hệ thống tự động phân tích gói zip và ánh xạ cấu trúc bài giảng tương tác lên giao diện khóa học.
-2.  **Thiết kế Lộ trình Khóa học (Course Architect):**
-    *   Tạo khóa học mới, kéo thả các gói bài giảng SCORM, video bài giảng, tài liệu PDF vào các chương mục phù hợp.
-    *   Thiết lập ngân hàng câu hỏi và tạo các bài thi trắc nghiệm (Quiz) đánh giá năng lực cuối khóa.
-3.  **Cấu hình Huy hiệu Số (OpenBadges):**
-    *   Đăng tải hình ảnh thiết kế huy hiệu khóa học (định dạng PNG/SVG).
-    *   Thiết lập siêu dữ liệu (Metadata) cho huy hiệu: Tên huy hiệu, Tổ chức cấp (Tên đối tác), Mô tả kỹ năng đạt được sau khóa học.
-4.  **Theo dõi Hiệu quả Khóa học:**
-    *   Xem thống kê số lượng học viên đăng ký học khóa học của mình.
-    *   Đánh giá phản hồi, xếp hạng (Rating/Review) của sinh viên để nâng cao chất lượng học liệu.
+*   **Quản lý Khóa học & Danh mục:** Tạo mới khóa học, phân loại khóa học vào các danh mục (ví dụ: Công nghệ thông tin, Kinh tế...).
+*   **Quản lý Bài học & Học liệu (Cơ sở tri thức AI):**
+    *   Tạo các chương mục, bài học nhỏ cho khóa học.
+    *   Tải lên các định dạng học liệu: Video, tài liệu PDF, bài giảng tương tác chuẩn **SCORM**.
+    *   **Xây dựng cơ sở tri thức cho AI:** Khi giảng viên tải tài liệu học tập (PDF/Text) lên, hệ thống sẽ tự động kích hoạt tiến trình vector hóa tài liệu này và lưu vào Vector Database để làm dữ liệu nền cho Trợ lý AI.
+*   **Quản lý Học viên & Cấp chứng nhận (OpenBadges):**
+    *   Gán học viên vào khóa học.
+    *   Thiết lập điều kiện để học viên hoàn thành khóa học (ví dụ: đạt trên 80% tiến độ học và thi đỗ Quiz) để nhận huy hiệu **OpenBadges**.
+*   **Theo dõi & Giám sát:**
+    *   Xem báo cáo tiến độ học tập chi tiết của từng học viên (đã học bài nào, hoàn thành bao nhiêu phần trăm).
+    *   Xem lịch sử điểm số và lịch sử hội thoại của học viên với Trợ lý AI (để nắm bắt xem học viên đang gặp khó khăn ở phần kiến thức nào).
 
 ---
 
-### 2.3. VAI TRÒ: TEACHER / MENTOR (GIẢNG VIÊN CỦA TRƯỜNG)
-Giảng viên là người trực tiếp quản lý lớp học, hướng dẫn, giải đáp thắc mắc và chấm điểm cho sinh viên.
+### 2.3. VAI TRÒ: HỌC VIÊN (STUDENT)
+*Bám sát yêu cầu: "Theo dõi tiến độ", "Quản lý kết quả/lịch sử", "Xây dựng trợ lý AI hỗ trợ học tập", và "Sinh phản hồi phù hợp với nội dung khóa học".*
 
-#### Các nghiệp vụ chính:
-1.  **Khai thác Khóa học (Course Adoption):**
-    *   Duyệt qua thư viện khóa học dùng chung của nhà trường (do bên thứ ba cung cấp).
-    *   Chọn khóa học phù hợp để nhập (import) về làm giáo trình giảng dạy cho lớp học của mình.
-2.  **Tổ chức Lớp học & Quản lý Học viên:**
-    *   Tạo lớp học mới (ví dụ: *Lớp Lập trình Web C31*).
-    *   Thêm sinh viên vào lớp học (bằng cách nhập danh sách Excel hoặc cung cấp Mã lớp cho sinh viên tự đăng ký).
-    *   Cấu hình luật hoàn thành khóa học: Ví dụ đạt tối thiểu 80% thời lượng học SCORM và trên 7.0 điểm thi trắc nghiệm thì mới được cấp OpenBadge.
-3.  **Hỗ trợ trực tiếp & Lên lịch phòng học trực tuyến (Mentoring):**
-    *   Tạo lịch hẹn và chèn link phòng học trực tuyến (Zoom, Google Meet, Teams) cho các buổi giải đáp trực tiếp (Office Hours).
-    *   Hỗ trợ trả lời các câu hỏi chuyên sâu của sinh viên trên Diễn đàn thảo luận (Forum) của lớp học.
-4.  **Giám sát Tiến độ & Điểm số:**
-    *   Theo dõi bảng điểm chi tiết của cả lớp (điểm SCORM tự động trả về, thời gian hoàn thành).
-    *   Chấm điểm thủ công các bài tập lớn, bài viết tự luận (nếu có).
-
----
-
-### 2.4. VAI TRÒ: STUDENT (SINH VIÊN / HỌC VIÊN)
-Sinh viên là đối tượng phục vụ chính của hệ thống LMS, tham gia học tập chủ động và tương tác với công nghệ.
-
-#### Các nghiệp vụ chính:
-1.  **Đăng ký & Vào học:**
-    *   Tìm kiếm khóa học, nhập mã lớp học do giảng viên cung cấp để tham gia vào lớp.
-    *   Xem lộ trình học tập trực quan và các lịch hẹn buổi học trực tuyến qua Zoom/Meet của giảng viên.
-2.  **Học tập Tương tác & Chat với Trợ lý AI:**
-    *   Mở và học trực tiếp các slide tương tác chuẩn SCORM (làm bài quiz tương tác ngay trên slide, kéo thả, chọn đáp án).
-    *   **Chat với Trợ lý AI (RAG):** Đặt câu hỏi thắc mắc liên quan trực tiếp đến nội dung bài học đang xem. AI sẽ đọc tài liệu của bài đó để trả lời chính xác, giúp sinh viên giải quyết khó khăn ngay lập tức.
-3.  **Đánh giá & Nhận OpenBadges:**
-    *   Làm bài thi trắc nghiệm cuối kỳ được chấm điểm tự động.
-    *   Nhận huy hiệu điện tử OpenBadges khi đạt yêu cầu hoàn thành lớp học.
-    *   Tải xuống file ảnh huy hiệu thông minh (chứa metadata xác thực) hoặc nhấn nút chia sẻ trực tiếp lên trang hồ sơ cá nhân **LinkedIn**.
-4.  **Xem Bảng xếp hạng (Gamification):**
-    *   Xem bảng xếp hạng điểm số và số lượng huy hiệu đã thu thập được của bản thân so với các bạn học sinh khác trong cùng lớp để tạo động lực thi đua.
+*   **Học tập & Tương tác:**
+    *   Vào khóa học được gán, học các bài giảng bằng video/PDF hoặc tương tác trực tiếp trên slide bài giảng chuẩn **SCORM**.
+    *   Hệ thống tự động ghi nhận tiến độ học (ví dụ: đã học xong bài 1, bài 2).
+*   **Học tập cùng Trợ lý AI (RAG chatbot):**
+    *   Trong quá trình học, học viên mở khung chat với Trợ lý AI.
+    *   Đặt câu hỏi thắc mắc. AI sẽ truy xuất thông tin từ cơ sở tri thức (học liệu do Giảng viên upload ở khóa học đó) để sinh phản hồi chính xác, bám sát nội dung bài học.
+    *   *Kiểm soát an toàn (Guardrails):* Câu hỏi và câu trả lời của học viên sẽ đi qua bộ lọc Guardrails của hệ thống để đảm bảo không vi phạm an toàn thông tin và không trả lời lạc đề môn học.
+*   **Đánh giá & Xem lịch sử:**
+    *   Làm bài thi trắc nghiệm để hệ thống tự động chấm điểm.
+    *   Xem tiến độ học tập của bản thân thông qua biểu đồ trực quan.
+    *   Xem lịch sử kết quả thi cử, xem lại lịch sử chat với AI để ôn tập.
+    *   Nhận và chia sẻ chứng chỉ số **OpenBadges** lên hồ sơ chuyên môn (LinkedIn).
