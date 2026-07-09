@@ -1,13 +1,9 @@
 # ĐẶC TẢ NGHIỆP VỤ CHI TIẾT CỦA 3 VAI TRÒ (ROLES) BÁM SÁT ĐỀ CƯƠNG TTTN
 **Đề tài:** Hệ thống quản lý học tập trực tuyến (LMS) tích hợp Trợ lý AI hỗ trợ học tập.
 
-Để bám sát 100% đề cương yêu cầu trong file [docs.md](file:///e:/TTTN/docs.md), hệ thống sẽ tối giản hóa nghiệp vụ, tập trung vào mô hình trường học/học viện chuẩn với **3 vai trò (Roles) cốt lõi**: **Super Admin**, **Giảng viên (Teacher)**, và **Học viên (Student)**. 
+**3 vai trò (Roles) cốt lõi**: **Super Admin**, **Giảng viên (Teacher)**, và **Học viên (Student)**. 
 
-Mô hình này loại bỏ phân hệ đối tác bên thứ ba phức tạp, giúp bạn tập trung 100% thời gian vào phần code LMS cốt lõi và Trợ lý AI RAG + Guardrails.
-
----
-
-## 1. SƠ ĐỒ PHỐI HỢP NGHIỆP VỤ (WORKFLOW)
+## SƠ ĐỒ PHỐI HỢP NGHIỆP VỤ (WORKFLOW)
 
 Quy trình phối hợp giữa 3 vai trò trong một chu kỳ học tập tích hợp AI:
 
@@ -33,38 +29,11 @@ sequenceDiagram
 
 ---
 
-## 2. CƠ CHẾ TỰ HỌC VÀ HỖ TRỢ 1-1 QUA GOOGLE MEET (ON-DEMAND SUPPORT)
-
-Trong mô hình tự học (Self-paced Learning) không cần mở lớp cố định, học viên tự chủ học tập qua tài liệu và AI. Khi gặp vấn đề quá phức tạp mà AI không giải quyết được, học viên có thể yêu cầu **hỗ trợ trực tiếp 1-1 từ Giảng viên thông qua Google Meet**. 
-
-### 2.1. Quy trình Nghiệp vụ tạo Lớp học ảo cá nhân (1-1 Meet Workflow)
-1.  **Gửi yêu cầu hỗ trợ (Student):** Khi sinh viên học một bài khó hoặc thi thử bị trượt, tại giao diện học tập sẽ có nút **"Yêu cầu Giảng viên hỗ trợ trực tiếp"**. Sinh viên nhập mô tả vấn đề gặp phải.
-2.  **Nhận yêu cầu và tạo link Meet (Teacher):** Giảng viên nhận được thông báo yêu cầu trên Dashboard của mình. Giảng viên chấp nhận hỗ trợ, tự tạo một phòng **Google Meet** và dán liên kết (Meet URL) kèm theo thời gian hẹn gặp lên hệ thống.
-3.  **Tham gia phòng hỗ trợ (Student):** Học viên nhận được thông báo phòng Meet đã sẵn sàng và thời gian hẹn. Đến giờ, học viên bấm trực tiếp vào liên kết hiển thị trên LMS để bắt đầu cuộc họp 1-1 với giảng viên.
-4.  **Hoàn thành hỗ trợ (Teacher):** Sau cuộc họp, giảng viên bấm nút "Hoàn thành hỗ trợ", ghi chú lại nội dung khắc phục và đóng yêu cầu (ticket).
-
-### 2.2. Thiết kế Cơ sở dữ liệu (Database Schema) cho tính năng này
-Để lưu trữ cơ chế tạo link Meet cá nhân, ta thiết lập bảng **`SupportTickets` (Yêu cầu hỗ trợ)**:
-
-| Tên trường (Field) | Kiểu dữ liệu | Mô tả |
-| :--- | :--- | :--- |
-| `id` | INT / UUID (PK) | Khóa chính của yêu cầu hỗ trợ. |
-| `student_id` | INT / UUID (FK) | Liên kết tới bảng `Users` (Học viên yêu cầu). |
-| `course_id` | INT / UUID (FK) | Liên kết tới bảng `Courses` (Khóa học đang học). |
-| `teacher_id` | INT / UUID (FK) | Liên kết tới bảng `Users` (Giảng viên nhận hỗ trợ, nullable ban đầu). |
-| `description` | TEXT | Nội dung thắc mắc, khó khăn của học viên. |
-| `meet_link` | VARCHAR(255) | Liên kết Google Meet/Zoom do Giảng viên dán lên. |
-| `scheduled_time` | DATETIME | Thời gian giảng viên hẹn học viên vào Meet. |
-| `status` | VARCHAR(50) | Trạng thái yêu cầu: `PENDING` (Đang chờ), `SCHEDULED` (Đã đặt lịch), `COMPLETED` (Hoàn thành), `CANCELLED` (Đã hủy). |
-| `resolution_note`| TEXT | Ghi chú tóm tắt kết quả của giảng viên sau khi hỗ trợ. |
-
----
-
-## 3. PHÂN BỔ NGHIỆP VỤ CHI TIẾT BÁM SÁT ĐỀ CƯƠNG
+## PHÂN BỔ NGHIỆP VỤ CHI TIẾT BÁM SÁT ĐỀ CƯƠNG
 
 Dưới đây là cách ánh xạ các yêu cầu thực hành trong đề cương vào chức năng nghiệp vụ của 3 vai trò:
 
-### 3.1. VAI TRÒ: SUPER ADMIN (QUẢN TRỊ HỆ THỐNG)
+## VAI TRÒ: SUPER ADMIN (QUẢN TRỊ HỆ THỐNG)
 *Bám sát yêu cầu: "Quản lý tài khoản người dùng" & "Xây dựng chức năng quản trị hệ thống".*
 
 *   **Quản lý người dùng:** Tạo mới, phê duyệt, khóa hoặc xóa tài khoản của Giảng viên và Học viên trên hệ thống.
@@ -73,7 +42,7 @@ Dưới đây là cách ánh xạ các yêu cầu thực hành trong đề cươ
 
 ---
 
-### 3.2. VAI TRÒ: GIẢNG VIÊN (TEACHER)
+## VAI TRÒ: GIẢNG VIÊN (TEACHER)
 *Bám sát yêu cầu: "Quản lý khóa học/danh mục", "Quản lý bài học/tài liệu", "Theo dõi tiến độ học viên", "Quản lý kết quả/lịch sử học tập", và "Xây dựng cơ sở tri thức từ nội dung khóa học".*
 
 *   **Quản lý Khóa học & Danh mục:** Tạo mới khóa học, phân loại khóa học vào các danh mục (ví dụ: Công nghệ thông tin, Kinh tế...).
@@ -91,7 +60,7 @@ Dưới đây là cách ánh xạ các yêu cầu thực hành trong đề cươ
 
 ---
 
-### 3.3. VAI TRÒ: HỌC VIÊN (STUDENT)
+## VAI TRÒ: HỌC VIÊN (STUDENT)
 *Bám sát yêu cầu: "Theo dõi tiến độ", "Quản lý kết quả/lịch sử", "Xây dựng trợ lý AI hỗ trợ học tập", và "Sinh phản hồi phù hợp với nội dung khóa học".*
 
 *   **Học tập & Tương tác:**
